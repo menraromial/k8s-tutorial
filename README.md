@@ -87,14 +87,12 @@ Create a simple pod to ensure everything is working correctly.
     apiVersion: v1
     kind: Pod
     metadata:
-      name: hello-world
-      namespace: default
+    name: hello-world
     spec:
-      containers:
-        - name: hello-world
-          image: bashofmann/rancher-demo:1.0.0
-          ports:
-            - containerPort: 8080
+    containers:
+        - name: hello
+        image: busybox  # Replace with your desired Docker image
+
     ```
 
 2. **Apply the YAML file to create the pod:**
@@ -174,7 +172,7 @@ spec:
     spec:
       containers:
         - name: hello-world
-          image: bashofmann/rancher-demo:latest
+          image: bashofmann/rancher-demo:1.0.0
           imagePullPolicy: Always
           ports:
             - containerPort: 8080
