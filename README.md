@@ -125,7 +125,7 @@ kubectl delete pod hello-world
 
 ## Step 5: Deploying the Application
 
-### Création d'un namespace
+### Creating a namespace
 
 A namespace in Kubernetes is used to organize and manage resources within a cluster, providing isolation and a way to divide cluster resources among multiple users or teams.
 
@@ -174,7 +174,7 @@ spec:
     spec:
       containers:
         - name: hello-world
-          image: bashofmann/rancher-demo:1.0.0
+          image: bashofmann/rancher-demo:latest
           imagePullPolicy: Always
           ports:
             - containerPort: 8080
@@ -218,36 +218,62 @@ spec:
 1. **Apply the YAML file to create the Deployment:**
 
     ```bash
-    sudo k3s kubectl apply -f hello-world-deployment.yaml
+    kubectl apply -f hello-world-deployment.yaml
     ```
 
 2. **Verify the Deployment and Pods:**
 
     ```bash
-    sudo k3s kubectl get deployments -n demo
-    sudo k3s kubectl get pods -n demo
+    kubectl get deployments -n demo
+    kubectl get pods -n demo
     ```
 
 3. **Check the ReplicaSets:**
 
     ```bash
-    sudo k3s kubectl get replicaset -n demo
+    kubectl get replicaset -n demo
     ```
+
+4. **For more information on replicas:**
+
+    ```bash
+    kubectl get pods -n demo -o wide
+    ```
+    `-o wide`: Provides additional details about each pod, such as the node it's running on, the IP address, the container images, and more.
+
 
 ## Step 6: Exposing the Application
 
 Create a service to expose the Deployment.
 
+A service in Kubernetes provides a stable network endpoint to access a set of pods, ensuring consistent access despite pod restarts or IP changes.
+
+#### Types of Services:
+
+- **ClusterIP**: Exposes the service on an internal IP within the cluster, making it accessible only within the cluster.
+- **NodePort**: Exposes the service on each node's IP at a static port, making it accessible from outside the cluster using `<NodeIP>:<NodePort>`.
+- **LoadBalancer**: Exposes the service externally using a cloud provider's load balancer.
+- **ExternalName**: Maps the service to the contents of the `externalName` field (e.g., `foo.bar.example.com`), creating a DNS alias.
+
 1. **Create a ClusterIP Service:**
 
     ```bash
-    sudo k3s kubectl expose deployment hello-world --type=ClusterIP --name=hello-world-service --port=8080 --target-port=8080 -n demo
+    kubectl expose deployment hello-world --type=ClusterIP --name=hello-world-service --port=8080 --target-port=8080 -n demo
     ```
+
+    - **`expose deployment hello-world`**: Creates a service to expose the deployment named `hello-world`.
+    - **`--type=ClusterIP`**: Specifies the type of service to create. `ClusterIP` means the service will be accessible only within the cluster.
+    - **`--name=hello-world-service`**: Assigns the name `hello-world-service` to the newly created service.
+    - **`--port=8080`**: Defines the port on which the service will be exposed.
+    - **`--target-port=8080`**: Specifies the port on the pod that the service should forward traffic to.
+    - **`-n demo`**: Limits the scope of the command to the `demo` namespace.
+
+
 
 2. **Verify the Service:**
 
     ```bash
-    sudo k3s kubectl get svc -n demo
+    kubectl get svc -n demo
     ```
 
 ## Step 7: Accessing the Application
@@ -255,27 +281,19 @@ Create a service to expose the Deployment.
 To access the application from your local machine, use `kubectl port-forward`:
 
 ```bash
-sudo k3s kubectl port-forward svc/hello-world-service 8080:8080 -n demo
+kubectl port-forward svc/hello-world-service 8080:8080 -n demo
 ```
 
 Open your browser and go to `http://localhost:8080` to see the application in action.
 
 ## Step 8: Inspecting Resources
 
-### Checking Nodes
-
-To get information about the nodes in the cluster:
-
-```bash
-sudo k3s kubectl get nodes
-```
-
 ### Describing a Pod
 
 To get detailed information about a specific pod:
 
 ```bash
-sudo k3s kubectl describe pod <pod-name> -n demo
+kubectl describe pod <pod-name> -n demo
 ```
 
 ### Describing a Deployment
@@ -283,7 +301,7 @@ sudo k3s kubectl describe pod <pod-name> -n demo
 To get detailed information about the deployment:
 
 ```bash
-sudo k3s kubectl describe deployment hello-world -n demo
+kubectl describe deployment hello-world -n demo
 ```
 
 ### Viewing Pod Logs
@@ -291,7 +309,7 @@ sudo k3s kubectl describe deployment hello-world -n demo
 To view the logs of a pod:
 
 ```bash
-sudo k3s kubectl logs -f <pod-name> -n demo
+kubectl logs -f <pod-name> -n demo
 ```
 
 ## Step 9: Cleaning Up
@@ -299,9 +317,141 @@ sudo k3s kubectl logs -f <pod-name> -n demo
 To delete all the resources created:
 
 ```bash
-sudo k3s kubectl delete namespace demo
+kubectl delete namespace demo
 ```
 
 ## Conclusion
 
 You've successfully set up a K3s cluster, deployed a simple application, and used various `kubectl` commands to manage and inspect Kubernetes resources. This foundation will help you explore Kubernetes further and leverage its capabilities.
+
+
+
+# Bonus
+## Scaling and Deploying a Horizontal Pod Autoscaler in Kubernetes
+
+### Step 1: Scaling Up/Down Manually
+
+You can manually scale the number of replicas in a deployment using the `kubectl scale` command.
+
+#### Scale Up
+
+To scale the `hello-world` deployment to 10 replicas:
+
+```bash
+kubectl scale deployment hello-world --replicas=10 -n demo
+```
+
+#### Scale Down
+
+To scale the `hello-world` deployment back down to 3 replicas:
+
+```bash
+kubectl scale deployment hello-world --replicas=3 -n demo
+```
+
+### Step 2: Deploying a Horizontal Pod Autoscaler (HPA)
+
+The Horizontal Pod Autoscaler automatically adjusts the number of pod replicas in a deployment based on observed CPU utilization (or other select metrics).
+
+#### Prerequisites
+
+Ensure that the Metrics Server is deployed in your cluster. The Metrics Server collects resource metrics from the Kubernetes nodes and pods and is required for HPA to function.
+
+To install the Metrics Server:
+
+```bash
+kubectl apply -f https://github.com/kubernetes-sigs/metrics-server/releases/latest/download/components.yaml
+```
+
+#### Deploy HPA for the `hello-world` Deployment
+
+1. **Create the HPA**
+
+   ```bash
+   kubectl autoscale deployment hello-world --cpu-percent=50 --min=1 --max=10 -n demo
+   ```
+
+   This command sets up an HPA for the `hello-world` deployment that:
+   - Targets 50% CPU utilization.
+   - Scales the number of pod replicas between 1 and 10 based on the observed CPU utilization.
+
+2. **Verify the HPA**
+
+   To check the status of the HPA:
+
+   ```bash
+   kubectl get hpa -n demo
+   ```
+
+   The output should show something like this:
+
+   ```plaintext
+   NAME          REFERENCE                TARGETS   MINPODS   MAXPODS   REPLICAS   AGE
+   hello-world   Deployment/hello-world   10%/50%   1         10        3          5m
+   ```
+
+### Step 3: Testing the HPA
+
+To test the HPA, you can simulate a load on the `hello-world` pods to observe the scaling behavior. Here's how you can do it:
+
+1. **Run a Load Generator Pod**
+
+   Create a pod that continuously sends requests to the `hello-world` service. Create a file named `load-generator.yaml` with the following content:
+
+   ```yaml
+   apiVersion: v1
+   kind: Pod
+   metadata:
+     name: load-generator
+     namespace: demo
+   spec:
+     containers:
+     - name: busybox
+       image: busybox
+       args:
+       - /bin/sh
+       - -c
+       - |
+         while true; do wget -q -O- http://hello-world-service:8080; done
+   ```
+
+   Apply this YAML file:
+
+   ```bash
+   kubectl apply -f load-generator.yaml
+   ```
+
+2. **Monitor the HPA**
+
+   Keep an eye on the HPA status to see how it adjusts the number of replicas:
+
+   ```bash
+   kubectl get hpa -n demo
+   ```
+
+   You should see the `TARGETS` column indicating higher CPU utilization, and the `REPLICAS` column increasing as the HPA scales up the deployment.
+
+3. **Stop the Load Generator**
+
+   Once you've observed the scaling behavior, delete the load generator pod:
+
+   ```bash
+   kubectl delete pod load-generator -n demo
+   ```
+
+### Summary
+
+- **Manual Scaling**: Use `kubectl scale` to manually adjust the number of replicas.
+- **Horizontal Pod Autoscaler (HPA)**: Automatically adjusts the number of replicas based on CPU utilization (or other metrics).
+- **Metrics Server**: Required for HPA to function, it collects resource metrics.
+- **Testing HPA**: Use a load generator to simulate traffic and observe the HPA scaling behavior.
+
+This guide helps you understand and implement both manual and automatic scaling in Kubernetes, ensuring your applications can handle varying loads efficiently.
+
+
+
+**Congratulations !!!**
+
+Why did the Kubernetes developer go broke?
+
+Because he lost all his containers! 🤣
