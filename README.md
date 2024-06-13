@@ -480,6 +480,6 @@ This guide helps you understand and implement both manual and automatic scaling 
 
 **Congratulations !!!**
 
-Why did the Kubernetes developer go broke?
+>Why did the Kubernetes developer go >broke?
 
-Because he lost all his containers! 🤣
+>Because he lost all his containers! 🤣
