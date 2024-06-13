@@ -158,6 +158,9 @@ This process ensures you have successfully created the `demo` namespace and conf
 
 ### Deployment YAML File
 
+A deployment in Kubernetes is a controller that manages the creation, scaling, and updating of a set of replicated Pods, ensuring the desired state of an application is maintained.
+
+
 Create a file named `hello-world-deployment.yaml` with the following content:
 
 ```yaml
