@@ -221,7 +221,7 @@ spec:
         - **livenessProbe**: Defines a probe to check if the container is alive.
 
 
----
+--
 
 For more information on using the image, please click [here](https://github.com/bashofmann/rancher-demo).
 
