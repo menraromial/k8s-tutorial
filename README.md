@@ -226,7 +226,7 @@ This is a Go demo application used for demonstrating Kubernetes and load balanci
 
 It will create a colored icon for each replica within a ReplicaSet and indicate which one most recently served a response. Replicas which haven't been heard from will begin to fade out, until after a configurable number of seconds they will disappear.
 
-For more information on using the image, please click [here](https://github.com/bashofmann/rancher-demo).
+For more information on using the container image, please click [here](https://github.com/bashofmann/rancher-demo).
 
 
 ### Apply the Deployment
