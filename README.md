@@ -409,15 +409,55 @@ kubectl apply -f https://github.com/kubernetes-sigs/metrics-server/releases/late
 
 1. **Create the HPA**
 
+   Create the file `hello-world-hpa.yaml`
+
+   ```yaml
+    apiVersion: autoscaling/v2
+    kind: HorizontalPodAutoscaler
+    metadata:
+      name: hello-world-autoscaler
+      namespace: demo
+    spec:
+      scaleTargetRef:
+        apiVersion: apps/v1
+        kind: Deployment
+        name: hello-world
+      minReplicas: 5
+      maxReplicas: 20
+      metrics:
+      - type: Resource
+        resource:
+          name: cpu
+          target:
+            type: Utilization
+            averageUtilization: 70
+      behavior:
+        scaleUp:
+          stabilizationWindowSeconds: 10
+          policies:
+          - type: Pods
+            value: 1
+            periodSeconds: 5
+        scaleDown:
+          stabilizationWindowSeconds: 10
+          policies:
+          - type: Pods
+            value: 1
+            periodSeconds: 5
+
+
+   ```
+   Apply 
+
    ```bash
-   kubectl autoscale deployment hello-world --cpu-percent=50 --min=1 --max=10 -n demo
+   kubectl apply -f hello-world-hpa.yaml
    ```
 
    This command sets up an HPA for the `hello-world` deployment that:
    - Targets 50% CPU utilization.
    - Scales the number of pod replicas between 1 and 10 based on the observed CPU utilization.
 
-2. **Verify the HPA**
+3. **Verify the HPA**
 
    To check the status of the HPA:
 
@@ -454,7 +494,7 @@ To test the HPA, you can simulate a load on the `hello-world` pods to observe th
        - /bin/sh
        - -c
        - |
-         while true; do wget -q -O- http://hello-world-service:8080; done
+         while true; do wget -q -O- http://NODE_IP_ADDRESS:8080; done
    ```
 
    Apply this YAML file:
