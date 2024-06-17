@@ -256,7 +256,14 @@ For more information on using the container image, please click [here](https://g
     kubectl get pods -n demo -o wide
     ```
     `-o wide`: Provides additional details about each pod, such as the node it's running on, the IP address, the container images, and more.
-
+5.  **See the pods metrics**
+    ```bash
+    kubectl top pods -n demo
+    ```
+    For nodes
+    ```bash
+    kubectl top nodes
+    ```
 
 ## Step 6: Exposing the Application
 
