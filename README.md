@@ -508,7 +508,7 @@ To test the HPA, you can simulate a load on the `hello-world` pods to observe th
    Keep an eye on the HPA status to see how it adjusts the number of replicas:
 
    ```bash
-   kubectl get hpa -n demo
+   watch -n3 kubectl get hpa,pod -n demo -o wide
    ```
 
    You should see the `TARGETS` column indicating higher CPU utilization, and the `REPLICAS` column increasing as the HPA scales up the deployment.
