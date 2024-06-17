@@ -183,6 +183,10 @@ spec:
         - name: hello-world
           image: bashofmann/rancher-demo:1.0.0
           imagePullPolicy: Always
+          resources:
+            requests:
+              memory: "12Mi"
+              cpu: "2m"
           ports:
             - containerPort: 8080
               name: web
