@@ -454,7 +454,7 @@ kubectl apply -f https://github.com/kubernetes-sigs/metrics-server/releases/late
    ```
 
    This command sets up an HPA for the `hello-world` deployment that:
-   - Targets 50% CPU utilization.
+   - Targets 70% CPU utilization.
    - Scales the number of pod replicas between 1 and 10 based on the observed CPU utilization.
 
 3. **Verify the HPA**
